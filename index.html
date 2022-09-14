@@ -3,12 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ThreeJS Starter</title>
+    <title>Game-development- and development by Adriaan Glibert</title>
     <link rel="stylesheet" href="/src/style.css">
   </head>
-  <body>
-    <div id="app"></div>
 
+  <body class="flex flex-col bg-light overflow-y-auto">
+    <header class="h-16">
+      <nav class="p-6">
+        <a class="logo font-display font-bold">
+          Adriaan Glibert
+        </a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="min-h-hero flex flex-col flex-1">
+        <section class="flex flex-col lg:flex-row flex-1 items-center justify-start lg:justify-end container">
+          <article class="mt-16 lg:mt-0 prose max-w-lg w-full flex-shrink-0">
+            <h1 class="text-4xl mb-4">Game-development by Adriaan Glibert</h1>
+
+            <p>
+              Game-designer, developer and teacher at<br><a class="underline underline-offset-8 decoration-tertiary-light hover:decoration-primary transition-colors" href="" target="_blank" rel="noopener noreferrer">Artevelde University College</a>.
+            </p>
+
+            <a class="px-6 py-4 border-solid border-2 font-bold border-primary bg-primary text-light rounded-full inline-block mt-6 mb-4 hover:bg-light hover:text-primary transition-colors" href="mailto:info@adriaanglibert.be">
+              Hit me up
+            </a>
+          </article>
+        </section>
+
+        <address class="not-italic p-6">
+          <ul class="flex gap-8 list-unstyled">
+            <li>
+              <a href="">Instagram</a>
+            </li>
+
+            <li>
+              <a href="">LinkedIn</a>
+            </li>
+
+            <li>
+              <a href="">Facebook</a>
+            </li>
+          </ul>
+        </address>
+      </div>
+    </main>
+
+    <footer>
+
+    </footer>
+
+    <div class="fixed top-0 left-0 w-screen h-screen -z-10" id="app"></div>
     <div id="debug"></div>
 
     <script type="module" src="/src/index.js"></script>

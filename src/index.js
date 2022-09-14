@@ -1,39 +1,40 @@
-
 import {
-  Scene,
-  WebGLRenderer,
-  PerspectiveCamera,
   BoxGeometry,
-  MeshStandardMaterial,
-  Mesh,
-  PointLight,
   Clock,
-  Vector2
+  Mesh,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  PointLight,
+  Scene,
+  Vector2,
+  WebGLRenderer
 } from 'three'
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-
 import { SampleShaderMaterial } from './materials/SampleShaderMaterial'
+import { Vector3 } from 'three'
 import { gltfLoader } from './loaders'
+import gsap from 'gsap'
 
 class App {
   #resizeCallback = () => this.#onResize()
 
   constructor(container) {
-    this.container = document.querySelector(container)
-    this.screen = new Vector2(this.container.clientWidth, this.container.clientHeight)
+    this.container = document.querySelector(container);
+    this.body = document.querySelector('body');
+    this.screen = new Vector2(this.container.clientWidth, this.container.clientHeight);
+    this.scene = null;
+    this.mesh = null;
   }
 
   async init() {
     this.#createScene()
     this.#createCamera()
     this.#createRenderer()
-    this.#createBox()
-    this.#createShadedBox()
     this.#createLight()
     this.#createClock()
     this.#addListeners()
-    this.#createControls()
+    // this.#createControls()
 
     await this.#loadModel()
 
@@ -46,8 +47,17 @@ class App {
       this.#update()
       this.#render()
     })
+  }
 
-    console.log(this)
+  mouseMoveFunc(evt, that) {
+    const percent = gsap.utils.normalize(0, innerWidth, evt.pageX);
+
+    gsap.to(that.pointLight.position, {
+      x: Math.floor(percent * 6) + 1,
+      y: Math.floor(percent * 6) + 1,
+      duration: 0.35,
+      overwrite: true
+    });
   }
 
   destroy() {
@@ -57,12 +67,6 @@ class App {
 
   #update() {
     const elapsed = this.clock.getElapsedTime()
-
-    this.box.rotation.y = elapsed
-    this.box.rotation.z = elapsed*0.6
-
-    this.shadedBox.rotation.y = elapsed
-    this.shadedBox.rotation.z = elapsed*0.6
   }
 
   #render() {
@@ -74,77 +78,51 @@ class App {
   }
 
   #createCamera() {
-    this.camera = new PerspectiveCamera(75, this.screen.x / this.screen.y, 0.1, 100)
-    this.camera.position.set(-0.7, 0.8, 3)
+    this.camera = new PerspectiveCamera(75, this.screen.x / this.screen.y, 0.1, 2000)
+    this.camera.position.set(0, 0, 5)
   }
 
   #createRenderer() {
     this.renderer = new WebGLRenderer({
-      alpha: true,
+      alpha: false,
       antialias: window.devicePixelRatio === 1
     })
 
     this.container.appendChild(this.renderer.domElement)
-
     this.renderer.setSize(this.screen.x, this.screen.y)
     this.renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio))
-    this.renderer.setClearColor(0x121212)
+    this.renderer.setClearColor(0xeaeaea)
     this.renderer.physicallyCorrectLights = true
   }
 
   #createLight() {
-    this.pointLight = new PointLight(0xff0055, 500, 100, 2)
-    this.pointLight.position.set(0, 10, 13)
+    this.pointLight = new PointLight(0xc0d6df, 100, 0, 0.5)
+    this.pointLight.position.set(0, 6, 6)
     this.scene.add(this.pointLight)
-  }
-
-  /**
-   * Create a box with a PBR material
-   */
-  #createBox() {
-    const geometry = new BoxGeometry(1, 1, 1, 1, 1, 1)
-
-    const material = new MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.7,
-      roughness: 0.35
-    })
-
-    this.box = new Mesh(geometry, material)
-    this.box.position.x = -1.5
-
-    this.scene.add(this.box)
-  }
-
-  /**
-   * Create a box with a custom ShaderMaterial
-   */
-  #createShadedBox() {
-    const geometry = new BoxGeometry(1, 1, 1, 1, 1, 1)
-
-    this.shadedBox = new Mesh(geometry, SampleShaderMaterial)
-    this.shadedBox.position.x = 1.5
-
-    this.scene.add(this.shadedBox)
   }
 
   /**
    * Load a 3D model and append it to the scene
    */
   async #loadModel() {
-    const gltf = await gltfLoader.load('/suzanne.glb')
+    const gltf = await gltfLoader.load('/xbox/source/controller.glb')
 
-    const mesh = gltf.scene.children[0]
-    mesh.position.z = 1.5
+    this.mesh = gltf.scene.children[0];
+    this.#setControllerProperties()
 
-    mesh.material = SampleShaderMaterial.clone()
-    mesh.material.wireframe = true
+    this.mesh.material = SampleShaderMaterial.clone()
+    this.mesh.material.wireframe = true
+    this.mesh.scale.set(0,0,0);
+    this.mesh.position.set(-5,-1,5);
 
-    this.scene.add(mesh)
+    this.scene.add(this.mesh);
+
+    window.addEventListener("mousemove", (e) => this.mouseMoveFunc(e, this));
   }
 
   #createControls() {
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    this.controls = new OrbitControls(this.camera, this.body);
+    this.controls.target.set(0, 0, 0 );
   }
 
   #createClock() {
@@ -166,8 +144,78 @@ class App {
     this.camera.updateProjectionMatrix()
 
     this.renderer.setSize(this.screen.x, this.screen.y)
+    this.#setControllerProperties()
+  }
+
+  #setControllerProperties() {
+    const isMobile = window.matchMedia('(max-width: 1024px)');
+
+    if (isMobile.matches) {
+      gsap.to(this.mesh.scale, {
+        x: 3,
+        y: 3,
+        z: 3,
+        duration: .75
+      });
+
+      gsap.to(this.mesh.position, {
+        x: -.5,
+        y: -1,
+        z: 0,
+        duration: .75
+      });
+
+      gsap.to(this.mesh.rotation, {
+        x: 0,
+        y: .5,
+        z: 0,
+        duration: .75
+      });
+    } else {
+      gsap.to(this.mesh.scale, {
+        x: 3.5,
+        y: 3.5,
+        z: 3.5,
+        duration: .75
+      });
+
+      gsap.to(this.mesh.position, {
+        x: -3.5,
+        y: 0,
+        z: 0,
+        duration: .75
+      });
+
+      gsap.to(this.mesh.rotation, {
+        x: 0,
+        y: 1,
+        z: 0.75,
+        duration: .75
+      });
+    }
   }
 }
 
-const app = new App('#app')
-app.init()
+const app = new App('#app');
+app.init();
+
+gsap.from('body', {
+  opacity: 0
+});
+
+const tl = gsap.timeline();
+
+tl
+.from('.logo', {
+  opacity: 0,
+})
+.from('article', {
+  opacity: 0,
+  y: 5,
+  ease: "power2.inOut"
+})
+.from('address ul li', {
+  opacity: 0,
+  y: 10,
+  stagger: 0.1
+}, '-=0.5')

@@ -1,5 +1,5 @@
-import { Pane } from 'tweakpane'
 import { Color } from 'three'
+import { Pane } from 'tweakpane'
 
 export class Debug {
   constructor(app) {
@@ -7,8 +7,6 @@ export class Debug {
 
     this.#createPanel()
     this.#createSceneConfig()
-    this.#createBoxConfig()
-    this.#createShadedBoxConfig()
     this.#createLightConfig()
   }
 
